@@ -1,5 +1,6 @@
 package com.example.canvasliveclock
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -10,7 +11,6 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.cos
-import kotlin.math.max
 import kotlin.math.sin
 
 @Composable
@@ -35,17 +35,20 @@ fun CanvasClock(
         mutableStateOf((milliseconds / 1000f) % 60f)
     }
     var minutes by remember {
-        mutableStateOf(((milliseconds / 1000f) / 60f) % 60f)
+        mutableStateOf((milliseconds / 1000f / 60f) % 60f)
     }
     var hours by remember {
-        mutableStateOf((milliseconds / 1000f) / 3600f + 2f)
+        mutableStateOf(milliseconds / 1000f / 3600f % 24 + 1f)
     }
 
     LaunchedEffect(key1 = seconds) {
         delay(1000L)
         seconds += 1f
+        if (seconds >= 60f) seconds = 0f
         minutes += 1f / 60f
+        if (minutes >= 60f) minutes = 0f
         hours += 1f / (60f * 12f)
+        if (hours >= 13f) hours = 1f
     }
 
     Canvas(
@@ -144,7 +147,7 @@ fun CanvasClock(
             y = circleCenter.y
         )
 
-        rotate(degrees = hours * (360f / 12f)) {
+        rotate(degrees = hours * (360f / 60f)) {
             drawLine(
                 color = Color.Black,
                 start = hourLineStart,
@@ -153,6 +156,8 @@ fun CanvasClock(
                 cap = StrokeCap.Round
             )
         }
+
+        Log.d("Current time", "$hours:$minutes:$seconds ==> $milliseconds")
 
 
     }
