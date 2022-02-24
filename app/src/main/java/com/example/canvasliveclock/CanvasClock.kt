@@ -38,17 +38,14 @@ fun CanvasClock(
         mutableStateOf((milliseconds / 1000f / 60f) % 60f)
     }
     var hours by remember {
-        mutableStateOf(milliseconds / 1000f / 3600f % 24 + 1f)
+        mutableStateOf(milliseconds / 1000f / 3600f % 12 + 1f)
     }
 
     LaunchedEffect(key1 = seconds) {
         delay(1000L)
         seconds += 1f
-        if (seconds >= 60f) seconds = 0f
         minutes += 1f / 60f
-        if (minutes >= 60f) minutes = 0f
         hours += 1f / (60f * 12f)
-        if (hours >= 13f) hours = 1f
     }
 
     Canvas(
@@ -105,7 +102,7 @@ fun CanvasClock(
             y = circleCenter.y
         )
 
-        rotate(degrees = seconds * (360f / 60f)) {
+        rotate(degrees = seconds * (360f / 60f) - 90) {
             drawLine(
                 color = Color.Red,
                 start = secLineStart,
@@ -126,7 +123,7 @@ fun CanvasClock(
             y = circleCenter.y
         )
 
-        rotate(degrees = minutes * (360f / 60f)) {
+        rotate(degrees = minutes * (360f / 60f) - 90) {
             drawLine(
                 color = Color.Black,
                 start = minLineStart,
@@ -147,7 +144,7 @@ fun CanvasClock(
             y = circleCenter.y
         )
 
-        rotate(degrees = hours * (360f / 60f)) {
+        rotate(degrees = hours * (360f / 12f) - 90) {
             drawLine(
                 color = Color.Black,
                 start = hourLineStart,
