@@ -5,6 +5,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.rotate
+import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.max
@@ -24,8 +27,25 @@ fun CanvasClock(
     var circleCenter by remember {
         mutableStateOf(Offset.Zero)
     }
-    var angle by remember {
-        mutableStateOf(0f)
+
+    val milliseconds = remember {
+        System.currentTimeMillis()
+    }
+    var seconds by remember {
+        mutableStateOf((milliseconds / 1000f) % 60f)
+    }
+    var minutes by remember {
+        mutableStateOf(((milliseconds / 1000f) / 60f) % 60f)
+    }
+    var hours by remember {
+        mutableStateOf((milliseconds / 1000f) / 3600f + 2f)
+    }
+
+    LaunchedEffect(key1 = seconds) {
+        delay(1000L)
+        seconds += 1f
+        minutes += 1f / 60f
+        hours += 1f / (60f * 12f)
     }
 
     Canvas(
@@ -44,7 +64,7 @@ fun CanvasClock(
         )
 
         for (i in minDegree..maxDegree step 6) {
-            val angleInRad = (i - 90 + angle) * (PI / 180f).toFloat()
+            val angleInRad = (i - 90) * (PI / 180f).toFloat()
 
             val lineLength = when {
                 i % 10 == 0 -> style.longLineLength
@@ -71,23 +91,68 @@ fun CanvasClock(
             )
         }
 
+        //SECONDS
         val secLineLength = radius - 60f
         val secLineStart = Offset(
-            x = circleCenter.x,
+            x = circleCenter.x - 20f,
             y = circleCenter.y
         )
         val secLineEnd = Offset(
-            x = circleCenter.x + secLineLength,
+            x = circleCenter.x + secLineLength + 20f,
             y = circleCenter.y
         )
 
-        drawLine(
-            color = Color.Red,
-            start = secLineStart,
-            end = secLineEnd,
-            strokeWidth = 1f
+        rotate(degrees = seconds * (360f / 60f)) {
+            drawLine(
+                color = Color.Red,
+                start = secLineStart,
+                end = secLineEnd,
+                strokeWidth = 1f,
+                cap = StrokeCap.Round
+            )
+        }
+
+        //MINUTES
+        val minLineLength = radius - 60f
+        val minLineStart = Offset(
+            x = circleCenter.x,
+            y = circleCenter.y
+        )
+        val minLineEnd = Offset(
+            x = circleCenter.x + minLineLength,
+            y = circleCenter.y
         )
 
+        rotate(degrees = minutes * (360f / 60f)) {
+            drawLine(
+                color = Color.Black,
+                start = minLineStart,
+                end = minLineEnd,
+                strokeWidth = 2f,
+                cap = StrokeCap.Round
+            )
+        }
+
+        //HOURS
+        val hourLineLength = radius / 2f + 20f
+        val hourLineStart = Offset(
+            x = circleCenter.x,
+            y = circleCenter.y
+        )
+        val hourLineEnd = Offset(
+            x = circleCenter.x + hourLineLength,
+            y = circleCenter.y
+        )
+
+        rotate(degrees = hours * (360f / 12f)) {
+            drawLine(
+                color = Color.Black,
+                start = hourLineStart,
+                end = hourLineEnd,
+                strokeWidth = 4f,
+                cap = StrokeCap.Round
+            )
+        }
 
 
     }
